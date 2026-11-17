@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<title>Otevřít v Obsidianu</title>
+<style>
+  :root{color-scheme:light dark;--bg:#F5F6FA;--text:#12123A;--muted:#5D6079;--btn:#284BFF;--btn-text:#fff}
+  @media (prefers-color-scheme: dark){:root{--bg:#0A0A22;--text:#ECEDF8;--muted:#A6A9C8;--btn:#8097FF;--btn-text:#0A0A22}}
+  body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+  main{max-width:30rem;padding:24px 16px;text-align:center}
+  h1{font-size:1.25rem;margin:0 0 8px}
+  p{margin:0 0 12px;color:var(--muted)}
+  a.btn{display:inline-block;padding:8px 18px;border-radius:6px;background:var(--btn);color:var(--btn-text);text-decoration:none;font-weight:600}
+</style>
+</head>
+<body>
+<main>
+  <h1 id="titulek">Otevírám v Obsidianu…</h1>
+  <p id="zprava">Když se Obsidian neotevře sám, klikni na tlačítko.</p>
+  <a id="otevrit" class="btn" hidden>Otevřít v Obsidianu</a>
+</main>
+<script>
+/* Přesměrování z Velínu do Obsidianu. Artefakt v claude.ai smí otevřít jen odkaz https, aplikaci spustit nesmí.
+   Cíl je za # v adrese, takže se na server nikdy neposílá. Pouští se jen obsidian://open s trezorem a souborem. */
+(function(){
+  var cil = "";
+  try { cil = decodeURIComponent(location.hash.slice(1)); } catch (e) {}
+  try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+  var platny = /^obsidian:\/\/open\?vault=[^&#\s]+&file=[^&#\s]+$/.test(cil);
+  var titulek = document.getElementById("titulek"), zprava = document.getElementById("zprava"), tlacitko = document.getElementById("otevrit");
+  if (!platny) {
+    titulek.textContent = "Neplatný odkaz";
+    zprava.textContent = "Tahle stránka otevírá jen soubory v Obsidianu z odkazů ve Velínu.";
+    return;
+  }
+  tlacitko.href = cil;
+  tlacitko.hidden = false;
+  var spust = window.mostSpust || function(u){ location.href = u; };
+  spust(cil);
+  setTimeout(function(){
+    zprava.textContent = "Obsidian by se měl otevřít. Tuhle kartu můžeš zavřít.";
+    try { window.close(); } catch (e) {}
+  }, 1500);
+})();
+</script>
+</body>
+</html>
